@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>uAssist_Status__c</fullName>
+    <label>uAssist Status</label>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>In Progress</fullName>
+                <default>false</default>
+                <label>In Progress</label>
+            </value>
+            <value>
+                <fullName>Model Prep Complete</fullName>
+                <default>false</default>
+                <label>Model Prep Complete</label>
+            </value>
+            <value>
+                <fullName>Model Prep in Progress</fullName>
+                <default>false</default>
+                <label>Model Prep in Progress</label>
+            </value>
+            <value>
+                <fullName>Tech Review</fullName>
+                <default>false</default>
+                <label>Tech Review</label>
+            </value>
+            <value>
+                <fullName>Modification Complete</fullName>
+                <default>false</default>
+                <label>Modification Complete</label>
+            </value>
+            <value>
+                <fullName>Modification in Progress</fullName>
+                <default>false</default>
+                <label>Modification in Progress</label>
+            </value>
+            <value>
+                <fullName>Modification Requested</fullName>
+                <default>false</default>
+                <label>Modification Requested</label>
+            </value>
+            <value>
+                <fullName>Treatment Plan Review</fullName>
+                <default>false</default>
+                <label>Treatment Plan Review</label>
+            </value>
+            <value>
+                <fullName>On Hold - Rx Form needs review</fullName>
+                <default>false</default>
+                <label>On Hold - Rx Form needs review</label>
+            </value>
+            <value>
+                <fullName>On Hold - New photos needed</fullName>
+                <default>false</default>
+                <label>On Hold - New photos needed</label>
+            </value>
+            <value>
+                <fullName>On Hold - New scans needed</fullName>
+                <default>false</default>
+                <label>On Hold - New scans needed</label>
+            </value>
+            <value>
+                <fullName>On Hold - New X-Rays needed</fullName>
+                <default>false</default>
+                <label>On Hold - New X-Rays needed</label>
+            </value>
+            <value>
+                <fullName>On Hold - New scans, photographs and X-Rays needed</fullName>
+                <default>false</default>
+                <label>On Hold - New scans, photographs and X-Rays needed</label>
+            </value>
+            <value>
+                <fullName>On Hold - Scans and images do not match</fullName>
+                <default>false</default>
+                <label>On Hold - Scans and images do not match</label>
+            </value>
+            <value>
+                <fullName>On Hold - Please review uAssist Message</fullName>
+                <default>false</default>
+                <label>On Hold - Please review uAssist Message</label>
+            </value>
+            <value>
+                <fullName>On Hold - New photos and Rx form review needed</fullName>
+                <default>false</default>
+                <label>On Hold - New photos and Rx form review needed</label>
+            </value>
+            <value>
+                <fullName>Case ready to review</fullName>
+                <default>false</default>
+                <label>Case ready to review</label>
+            </value>
+            <value>
+                <fullName>Cancel</fullName>
+                <default>false</default>
+                <label>Cancel</label>
+            </value>
+            <value>
+                <fullName>Completed</fullName>
+                <default>false</default>
+                <label>Completed</label>
+            </value>
+            <value>
+                <fullName>Rejected</fullName>
+                <default>false</default>
+                <label>Rejected</label>
+            </value>
+            <value>
+                <fullName>Ready to QC</fullName>
+                <default>false</default>
+                <label>Ready to QC</label>
+            </value>
+            <value>
+                <fullName>QC in Progress</fullName>
+                <default>false</default>
+                <label>QC in Progress</label>
+            </value>
+            <value>
+                <fullName>Rework Required</fullName>
+                <default>false</default>
+                <label>Rework Required</label>
+            </value>
+            <value>
+                <fullName>Ready for Mod QC</fullName>
+                <default>false</default>
+                <label>Ready for Mod QC</label>
+            </value>
+            <value>
+                <fullName>Mod QC In Progress</fullName>
+                <default>false</default>
+                <label>Mod QC In Progress</label>
+            </value>
+            <value>
+                <fullName>Declined with Comments</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Declined with Comments</label>
+            </value>
+            <value>
+                <fullName>Delayed</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Delayed</label>
+            </value>
+            <value>
+                <fullName>Doctor Review</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Doctor Review</label>
+            </value>
+            <value>
+                <fullName>Keep</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>Keep</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
