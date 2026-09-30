@@ -478,15 +478,16 @@ public class ULabOrderTriggerTest {
     @isTest
     static void shouldKeepRotationPairsIndependent_WhenUAssistAndOrderStatusChangeInSameDml() {
         // Given
-        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
-            1, caseId(), 'In Progress', 'Pending', null, true);
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrders(
+            1, caseId(), 'In Progress', 'Pending', System.now().addHours(-2), System.now().addHours(-3), true);
         uLab_Order__c before = reload(orders[0].Id);
 
         // When
-        orders[0].uAssist_Status__c = 'Model Prep Complete';
-        orders[0].Order_Status__c = 'Processed';
+        // Update a fresh sObject so the seeded timestamps held in memory are not written back over the flow's values
+        uLab_Order__c changes = new uLab_Order__c(
+            Id = orders[0].Id, uAssist_Status__c = 'Model Prep Complete', Order_Status__c = 'Processed');
         Test.startTest();
-        update orders;
+        update changes;
         Test.stopTest();
 
         // Then
@@ -508,14 +509,14 @@ public class ULabOrderTriggerTest {
     @isTest
     static void shouldNotRotateOrderStatusPair_WhenOnlyUAssistStatusChanges() {
         // Given
-        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
-            1, caseId(), 'In Progress', 'Pending', null, true);
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrders(
+            1, caseId(), 'In Progress', 'Pending', System.now().addHours(-2), System.now().addHours(-3), true);
         uLab_Order__c before = reload(orders[0].Id);
 
         // When
-        orders[0].uAssist_Status__c = 'Tech Review';
+        uLab_Order__c changes = new uLab_Order__c(Id = orders[0].Id, uAssist_Status__c = 'Model Prep Complete');
         Test.startTest();
-        update orders;
+        update changes;
         Test.stopTest();
 
         // Then
