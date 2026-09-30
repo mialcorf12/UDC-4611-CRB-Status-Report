@@ -3,6 +3,7 @@ public class ULabOrderTriggerTest {
 
     private static final String UASSIST = 'uAssist_Status__c';
     private static final String ORDER = 'Order_Status__c';
+    private static final String CRB = 'Assigned_CRB__c';
     private static final Datetime CURRENT_ENTRY = Datetime.newInstance(2026, 1, 15, 10, 0, 0);
     private static final Datetime LAST_ENTRY = Datetime.newInstance(2026, 1, 10, 8, 30, 0);
     private static final Integer BULK_SIZE = 251;
@@ -36,6 +37,29 @@ public class ULabOrderTriggerTest {
 
     private static Set<Id> ids(List<uLab_Order__c> orders) {
         return new Map<Id, uLab_Order__c>(orders).keySet();
+    }
+
+    private static uLab_Order__c reload(Id orderId) {
+        return [
+            SELECT Id, CreatedDate, uAssist_Status__c, Order_Status__c,
+                   Date_Entered_In_Current_Status__c, Date_Entered_In_Last_Status__c,
+                   Date_entered_Model_Prep_Cpl_Status__c,
+                   Order_Status_Entered_Current__c, Order_Status_Entered_Last__c,
+                   Date_Entered_Pending__c, Date_Entered_Processed__c,
+                   Date_Entered_Manufacturing__c, Date_Entered_Shipped__c,
+                   CRB_Assigned_Date__c, CRB_Started__c
+            FROM uLab_Order__c WHERE Id = :orderId
+        ];
+    }
+
+    private static ULab_Order_Status_KPI__c kpiFor(Id orderId, String fieldName, String newStatus) {
+        List<ULab_Order_Status_KPI__c> rows = [
+            SELECT Id, New_Status__c, Previous_Status__c, New_Status_Entry_Date__c, Previous_Status_Entry_Time__c
+            FROM ULab_Order_Status_KPI__c
+            WHERE uLab_Order__c = :orderId AND Field_Name__c = :fieldName AND New_Status__c = :newStatus
+        ];
+        Assert.areEqual(1, rows.size(), 'Exactly one ' + fieldName + ' KPI expected for ' + newStatus);
+        return rows[0];
     }
 
     @isTest
@@ -385,5 +409,208 @@ public class ULabOrderTriggerTest {
         // Then
         Assert.areEqual(BULK_SIZE, kpis(ids(inserted), CRB).size(), 'One CRB KPI per inserted order');
         Assert.areEqual(BULK_SIZE, kpis(ids(toUpdate), CRB).size(), 'One CRB KPI per updated order');
+    }
+
+    // ---- Order_Status stage dates and dedicated rotation pair (Order_Status_Entered_Current/Last__c) ----
+    // These tests exercise the deployed before-save flow, which sets the timestamps.
+
+    @isTest
+    static void shouldChainOrderStatusKpis_WhenOrderMovesThroughAllStages() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), null, 'Pending', null, true);
+        Id orderId = orders[0].Id;
+        uLab_Order__c afterInsert = reload(orderId);
+        ULab_Order_Status_KPI__c previousKpi = kpiFor(orderId, ORDER, 'Pending');
+        Assert.isNotNull(afterInsert.Date_Entered_Pending__c, 'Pending stage date should be set on insert');
+        Assert.isNull(afterInsert.Date_Entered_Processed__c, 'Processed stage date should not be set yet');
+        Assert.areEqual(afterInsert.Order_Status_Entered_Current__c, previousKpi.New_Status_Entry_Date__c,
+            'First KPI entry date should be the Order Status current timestamp');
+        Assert.areEqual(afterInsert.CreatedDate, previousKpi.Previous_Status_Entry_Time__c,
+            'First KPI has no previous stage, so it falls back to the order CreatedDate');
+        Assert.isNull(previousKpi.Previous_Status__c, 'Previous status should be null on insert');
+
+        // When / Then: each transition chains onto the previous KPI
+        String[] stages = new String[]{ 'Pending', 'Processed', 'Manufacturing', 'Shipped' };
+        for (Integer i = 1; i < stages.size(); i++) {
+            orders[0].Order_Status__c = stages[i];
+            update orders;
+
+            uLab_Order__c current = reload(orderId);
+            ULab_Order_Status_KPI__c kpi = kpiFor(orderId, ORDER, stages[i]);
+            Assert.areEqual(stages[i - 1], kpi.Previous_Status__c, 'Previous status should be the prior stage');
+            Assert.areEqual(previousKpi.New_Status_Entry_Date__c, kpi.Previous_Status_Entry_Time__c,
+                'Previous entry time should be when the prior stage was entered');
+            Assert.areEqual(current.Order_Status_Entered_Current__c, kpi.New_Status_Entry_Date__c,
+                'New entry date should be the current Order Status timestamp');
+            Assert.areEqual(current.Order_Status_Entered_Last__c, kpi.Previous_Status_Entry_Time__c,
+                'Previous entry time should be the last Order Status timestamp');
+            previousKpi = kpi;
+        }
+
+        uLab_Order__c finalOrder = reload(orderId);
+        Assert.isNotNull(finalOrder.Date_Entered_Pending__c, 'Pending stage date should be set');
+        Assert.isNotNull(finalOrder.Date_Entered_Processed__c, 'Processed stage date should be set');
+        Assert.isNotNull(finalOrder.Date_Entered_Manufacturing__c, 'Manufacturing stage date should be set');
+        Assert.isNotNull(finalOrder.Date_Entered_Shipped__c, 'Shipped stage date should be set');
+        Assert.areEqual(0, kpis(ids(orders), UASSIST).size(), 'Order Status changes should not create uAssist KPIs');
+    }
+
+    @isTest
+    static void shouldKeepFirstStageDate_WhenOrderReturnsToEarlierStage() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), null, 'Pending', null, true);
+        Datetime firstPendingDate = reload(orders[0].Id).Date_Entered_Pending__c;
+
+        // When
+        orders[0].Order_Status__c = 'Processed';
+        update orders;
+        orders[0].Order_Status__c = 'Pending';
+        update orders;
+
+        // Then
+        Assert.areEqual(firstPendingDate, reload(orders[0].Id).Date_Entered_Pending__c,
+            'Stage date is set once and must not be overwritten');
+        Assert.areEqual(3, kpis(ids(orders), ORDER).size(), 'Every Order Status change still creates a KPI');
+    }
+
+    @isTest
+    static void shouldKeepRotationPairsIndependent_WhenUAssistAndOrderStatusChangeInSameDml() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), 'In Progress', 'Pending', null, true);
+        uLab_Order__c before = reload(orders[0].Id);
+
+        // When
+        orders[0].uAssist_Status__c = 'Model Prep Complete';
+        orders[0].Order_Status__c = 'Processed';
+        Test.startTest();
+        update orders;
+        Test.stopTest();
+
+        // Then
+        uLab_Order__c after = reload(orders[0].Id);
+        ULab_Order_Status_KPI__c uAssistKpi = kpiFor(after.Id, UASSIST, 'Model Prep Complete');
+        ULab_Order_Status_KPI__c orderKpi = kpiFor(after.Id, ORDER, 'Processed');
+        Assert.areEqual(before.Date_Entered_In_Current_Status__c, uAssistKpi.Previous_Status_Entry_Time__c,
+            'uAssist KPI should chain on the uAssist rotation pair only');
+        Assert.areEqual(after.Date_Entered_In_Current_Status__c, uAssistKpi.New_Status_Entry_Date__c,
+            'uAssist KPI entry date should come from the uAssist current timestamp');
+        Assert.areEqual(before.Order_Status_Entered_Current__c, orderKpi.Previous_Status_Entry_Time__c,
+            'Order Status KPI should chain on the Order Status rotation pair only');
+        Assert.areEqual(after.Order_Status_Entered_Current__c, orderKpi.New_Status_Entry_Date__c,
+            'Order Status KPI entry date should come from the Order Status current timestamp');
+        Assert.isNotNull(after.Date_entered_Model_Prep_Cpl_Status__c, 'uAssist stage date should be set');
+        Assert.isNotNull(after.Date_Entered_Processed__c, 'Order Status stage date should be set');
+    }
+
+    @isTest
+    static void shouldNotRotateOrderStatusPair_WhenOnlyUAssistStatusChanges() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), 'In Progress', 'Pending', null, true);
+        uLab_Order__c before = reload(orders[0].Id);
+
+        // When
+        orders[0].uAssist_Status__c = 'Tech Review';
+        Test.startTest();
+        update orders;
+        Test.stopTest();
+
+        // Then
+        uLab_Order__c after = reload(orders[0].Id);
+        Assert.areEqual(before.Order_Status_Entered_Current__c, after.Order_Status_Entered_Current__c,
+            'Order Status current timestamp must not change');
+        Assert.areEqual(before.Order_Status_Entered_Last__c, after.Order_Status_Entered_Last__c,
+            'Order Status last timestamp must not change');
+        Assert.areEqual(1, kpis(ids(orders), ORDER).size(), 'No new Order Status KPI for a uAssist-only change');
+    }
+
+    // ---- CRB assignment date ----
+
+    @isTest
+    static void shouldUseCrbAssignedDateAndCreateOneKpi_WhenCrbAssignedOnUpdate() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), null, null, null, true);
+        Assert.isNull(reload(orders[0].Id).CRB_Assigned_Date__c, 'CRB date should be empty before assignment');
+
+        // When
+        orders[0].Assigned_CRB__c = crbUserId();
+        Test.startTest();
+        update orders;
+        Test.stopTest();
+
+        // Then
+        uLab_Order__c after = reload(orders[0].Id);
+        Assert.isNotNull(after.CRB_Assigned_Date__c, 'CRB assigned date should be set');
+        Assert.isNotNull(after.CRB_Started__c, 'CRB started should be set');
+        List<ULab_Order_Status_KPI__c> crbKpis = kpis(ids(orders), CRB);
+        Assert.areEqual(1, crbKpis.size(), 'Exactly one CRB KPI should be created');
+        Assert.areEqual(after.CRB_Assigned_Date__c, crbKpis[0].New_Status_Entry_Date__c,
+            'CRB KPI entry date should be CRB_Assigned_Date__c');
+        Assert.isNotNull(crbKpis[0].Previous_Status_Entry_Time__c, 'Previous entry time is required and must be populated');
+
+        // When: later changes must not move the CRB date or add a KPI
+        Datetime firstCrbDate = after.CRB_Assigned_Date__c;
+        orders[0].uAssist_Status__c = 'In Progress';
+        update orders;
+        Assert.areEqual(firstCrbDate, reload(orders[0].Id).CRB_Assigned_Date__c, 'CRB assigned date is set once');
+        Assert.areEqual(1, kpis(ids(orders), CRB).size(), 'No additional CRB KPI');
+    }
+
+    @isTest
+    static void shouldUseCrbAssignedDate_WhenOrderInsertedWithAssignedCrb() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            1, caseId(), null, null, crbUserId(), false);
+
+        // When
+        Test.startTest();
+        insert orders;
+        Test.stopTest();
+
+        // Then
+        uLab_Order__c after = reload(orders[0].Id);
+        List<ULab_Order_Status_KPI__c> crbKpis = kpis(ids(orders), CRB);
+        Assert.areEqual(1, crbKpis.size(), 'Exactly one CRB KPI should be created');
+        Assert.isNotNull(after.CRB_Assigned_Date__c, 'CRB assigned date should be set on insert');
+        Assert.areEqual(after.CRB_Assigned_Date__c, crbKpis[0].New_Status_Entry_Date__c,
+            'CRB KPI entry date should be CRB_Assigned_Date__c');
+        Assert.areEqual(after.CreatedDate, crbKpis[0].Previous_Status_Entry_Time__c,
+            'No previous CRB stage, so it falls back to the order CreatedDate');
+    }
+
+    // ---- Bulk ----
+
+    @isTest
+    static void shouldTrackStageDatesForAllRecords_WhenBulkOrderStatusChanges() {
+        // Given
+        List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrdersForFlow(
+            BULK_SIZE, caseId(), null, 'Pending', null, true);
+        Assert.areEqual(BULK_SIZE, kpis(ids(orders), ORDER).size(), 'One initial Order Status KPI per order');
+
+        // When
+        for (uLab_Order__c ord : orders) {
+            ord.Order_Status__c = 'Processed';
+        }
+        Test.startTest();
+        update orders;
+        Test.stopTest();
+
+        // Then
+        Integer processedKpis = [
+            SELECT COUNT() FROM ULab_Order_Status_KPI__c
+            WHERE uLab_Order__c IN :ids(orders) AND Field_Name__c = :ORDER
+              AND Previous_Status__c = 'Pending' AND New_Status__c = 'Processed'
+              AND Previous_Status_Entry_Time__c != null AND New_Status_Entry_Date__c != null
+        ];
+        Integer withStageDate = [
+            SELECT COUNT() FROM uLab_Order__c
+            WHERE Id IN :ids(orders) AND Date_Entered_Pending__c != null AND Date_Entered_Processed__c != null
+        ];
+        Assert.areEqual(BULK_SIZE, processedKpis, 'One Processed KPI per order');
+        Assert.areEqual(BULK_SIZE, withStageDate, 'Stage dates set for every order');
     }
 }
