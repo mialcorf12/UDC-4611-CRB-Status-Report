@@ -340,20 +340,13 @@
         </connector>
     </assignments>
     <assignments>
-        <description>Stamp CRB_Assigned_Date__c and CRB_Started__c once.</description>
+        <description>Stamp CRB_Assigned_Date__c once.</description>
         <name>C_Set_CRB_Dates</name>
         <label>C - Set CRB Dates</label>
         <locationX>380</locationX>
         <locationY>3120</locationY>
         <assignmentItems>
             <assignToReference>$Record.CRB_Assigned_Date__c</assignToReference>
-            <operator>Assign</operator>
-            <value>
-                <elementReference>$Flow.CurrentDateTime</elementReference>
-            </value>
-        </assignmentItems>
-        <assignmentItems>
-            <assignToReference>$Record.CRB_Started__c</assignToReference>
             <operator>Assign</operator>
             <value>
                 <elementReference>$Flow.CurrentDateTime</elementReference>

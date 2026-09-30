@@ -47,7 +47,7 @@ public class ULabOrderTriggerTest {
                    Order_Status_Entered_Current__c, Order_Status_Entered_Last__c,
                    Date_Entered_Pending__c, Date_Entered_Processed__c,
                    Date_Entered_Manufacturing__c, Date_Entered_Shipped__c,
-                   CRB_Assigned_Date__c, CRB_Started__c
+                   CRB_Assigned_Date__c
             FROM uLab_Order__c WHERE Id = :orderId
         ];
     }
@@ -546,7 +546,6 @@ public class ULabOrderTriggerTest {
         // Then
         uLab_Order__c after = reload(orders[0].Id);
         Assert.isNotNull(after.CRB_Assigned_Date__c, 'CRB assigned date should be set');
-        Assert.isNotNull(after.CRB_Started__c, 'CRB started should be set');
         List<ULab_Order_Status_KPI__c> crbKpis = kpis(ids(orders), CRB);
         Assert.areEqual(1, crbKpis.size(), 'Exactly one CRB KPI should be created');
         Assert.areEqual(after.CRB_Assigned_Date__c, crbKpis[0].New_Status_Entry_Date__c,

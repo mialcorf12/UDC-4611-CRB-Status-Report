@@ -8,13 +8,17 @@
 	</types>
 	<types>
 		<members>uLab_Order__c.CRB_Assigned_Date__c</members>
-		<members>uLab_Order__c.CRB_Started__c</members>
 		<members>uLab_Order__c.Date_Entered_Manufacturing__c</members>
 		<members>uLab_Order__c.Date_Entered_Pending__c</members>
 		<members>uLab_Order__c.Date_Entered_Processed__c</members>
 		<members>uLab_Order__c.Date_Entered_Shipped__c</members>
 		<members>uLab_Order__c.Order_Status_Entered_Current__c</members>
 		<members>uLab_Order__c.Order_Status_Entered_Last__c</members>
+		<members>uLab_Order__c.Time_Creation_to_CRB_Assigned__c</members>
+		<members>uLab_Order__c.Time_CRB_Assigned_to_Pending__c</members>
+		<members>uLab_Order__c.Time_Pending_to_Processed__c</members>
+		<members>uLab_Order__c.Time_Processed_to_Manufacturing__c</members>
+		<members>uLab_Order__c.Time_Manufacturing_to_Shipped__c</members>
 		<name>CustomField</name>
 	</types>
 	<types>
