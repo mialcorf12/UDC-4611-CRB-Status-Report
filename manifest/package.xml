@@ -3,23 +3,18 @@
 	<types>
 		<members>ULabOrderStatusKPIHandler</members>
 		<members>ULabOrderTriggerTest</members>
+		<members>ULabOrderTestDataFactory</members>
 		<name>ApexClass</name>
 	</types>
 	<types>
-		<members>uLab_Order__c.Date_Entered_In_Current_Status__c</members>
-		<members>uLab_Order__c.Date_Entered_In_Last_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Case_Ready_to_Review_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Completed_Status__c</members>
-		<members>uLab_Order__c.Date_entered_In_Progress_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Model_Prep_Cpl_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Model_Prep_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Modification_Complete__c</members>
-		<members>uLab_Order__c.Date_entered_Modification_Request_Status__c</members>
-		<members>uLab_Order__c.Date_entered_On_Hold_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Rejected_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Tech_Review_Status__c</members>
-		<members>uLab_Order__c.Date_entered_Treatment_Plan_Review_Sts__c</members>
-		<members>uLab_Order__c.Date_entered_in_Progress2_Status__c</members>
+		<members>uLab_Order__c.CRB_Assigned_Date__c</members>
+		<members>uLab_Order__c.CRB_Started__c</members>
+		<members>uLab_Order__c.Date_Entered_Manufacturing__c</members>
+		<members>uLab_Order__c.Date_Entered_Pending__c</members>
+		<members>uLab_Order__c.Date_Entered_Processed__c</members>
+		<members>uLab_Order__c.Date_Entered_Shipped__c</members>
+		<members>uLab_Order__c.Order_Status_Entered_Current__c</members>
+		<members>uLab_Order__c.Order_Status_Entered_Last__c</members>
 		<name>CustomField</name>
 	</types>
 	<types>

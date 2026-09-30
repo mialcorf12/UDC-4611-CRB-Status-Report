@@ -3,7 +3,7 @@
     <fullName>Date_Entered_Pending__c</fullName>
     <label>Date Entered Pending</label>
     <required>false</required>
-    <trackHistory>true</trackHistory>
+    <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>

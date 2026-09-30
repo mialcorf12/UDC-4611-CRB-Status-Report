@@ -3,7 +3,7 @@
     <fullName>CRB_Assigned_Date__c</fullName>
     <label>CRB Assigned Date</label>
     <required>false</required>
-    <trackHistory>true</trackHistory>
+    <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>
