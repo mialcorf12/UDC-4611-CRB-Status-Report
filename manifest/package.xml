@@ -23,12 +23,10 @@
 		<name>CustomField</name>
 	</types>
 	<types>
-		<members>uLab_Order_Actions_And_Related_Records</members>
 		<members>uLab_Order_Record_Triggered_Fast_Update_Flow</members>
 		<name>Flow</name>
 	</types>
 	<types>
-		<members>uLab_Order_Actions_And_Related_Records</members>
 		<members>uLab_Order_Record_Triggered_Fast_Update_Flow</members>
 		<name>FlowDefinition</name>
 	</types>
