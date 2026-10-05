@@ -29,11 +29,12 @@ public class ULabOrderStatusKPIHandler {
 
             if (isOrderStatusChanged) {
                 ULab_Order_Status_KPI__c kpi = new ULab_Order_Status_KPI__c();
-                kpi.Assigned_User__c = newOrder.Assigned_uAssistant__c;
+                kpi.Assigned_User__c = newOrder.Assigned_CRB__c;
                 kpi.Field_Name__c = 'Order_Status__c';
-                kpi.New_Status_Entry_Date__c = newOrder.Date_Entered_In_Current_Status__c;
+                kpi.New_Status_Entry_Date__c = newOrder.Order_Status_Entered_Current__c;
                 kpi.New_Status__c = newOrder.Order_Status__c;
-                kpi.Previous_Status_Entry_Time__c = newOrder.Date_Entered_In_Last_Status__c;
+                kpi.Previous_Status_Entry_Time__c = newOrder.Order_Status_Entered_Last__c != null
+                    ? newOrder.Order_Status_Entered_Last__c : newOrder.CreatedDate;
                 kpi.Previous_Status__c = null;
                 kpi.uLab_Order__c = newOrder.Id;
                 kpiRecordsToInsert.add(kpi);
@@ -43,9 +44,9 @@ public class ULabOrderStatusKPIHandler {
                 ULab_Order_Status_KPI__c kpi = new ULab_Order_Status_KPI__c();
                 kpi.Assigned_User__c = newOrder.Assigned_CRB__c;
                 kpi.Field_Name__c = 'Assigned_CRB__c';
-                kpi.New_Status_Entry_Date__c = newOrder.Date_Entered_In_Current_Status__c;
+                kpi.New_Status_Entry_Date__c = newOrder.CRB_Assigned_Date__c;
                 kpi.New_Status__c = newOrder.Assigned_CRB__c;
-                kpi.Previous_Status_Entry_Time__c = newOrder.Date_Entered_In_Last_Status__c;
+                kpi.Previous_Status_Entry_Time__c = newOrder.CreatedDate;
                 kpi.Previous_Status__c = null;
                 kpi.uLab_Order__c = newOrder.Id;
                 kpiRecordsToInsert.add(kpi);
@@ -92,11 +93,12 @@ public class ULabOrderStatusKPIHandler {
 
             if (isOrderStatusChanged) {
                 ULab_Order_Status_KPI__c kpi = new ULab_Order_Status_KPI__c();
-                kpi.Assigned_User__c = newOrder.Assigned_uAssistant__c;
+                kpi.Assigned_User__c = newOrder.Assigned_CRB__c;
                 kpi.Field_Name__c = 'Order_Status__c';
-                kpi.New_Status_Entry_Date__c = newOrder.Date_Entered_In_Current_Status__c;
+                kpi.New_Status_Entry_Date__c = newOrder.Order_Status_Entered_Current__c;
                 kpi.New_Status__c = newOrder.Order_Status__c;
-                kpi.Previous_Status_Entry_Time__c = newOrder.Date_Entered_In_Last_Status__c;
+                kpi.Previous_Status_Entry_Time__c = newOrder.Order_Status_Entered_Last__c != null
+                    ? newOrder.Order_Status_Entered_Last__c : newOrder.CreatedDate;
                 kpi.Previous_Status__c = oldOrder.Order_Status__c;
                 kpi.uLab_Order__c = newOrder.Id;
                 kpiRecordsToInsert.add(kpi);
@@ -106,9 +108,9 @@ public class ULabOrderStatusKPIHandler {
                 ULab_Order_Status_KPI__c kpi = new ULab_Order_Status_KPI__c();
                 kpi.Assigned_User__c = newOrder.Assigned_CRB__c;
                 kpi.Field_Name__c = 'Assigned_CRB__c';
-                kpi.New_Status_Entry_Date__c = newOrder.Date_Entered_In_Current_Status__c;
+                kpi.New_Status_Entry_Date__c = newOrder.CRB_Assigned_Date__c;
                 kpi.New_Status__c = newOrder.Assigned_CRB__c;
-                kpi.Previous_Status_Entry_Time__c = newOrder.Date_Entered_In_Last_Status__c;
+                kpi.Previous_Status_Entry_Time__c = newOrder.CreatedDate;
                 kpi.Previous_Status__c = oldOrder.Assigned_CRB__c;
                 kpi.uLab_Order__c = newOrder.Id;
                 kpiRecordsToInsert.add(kpi);

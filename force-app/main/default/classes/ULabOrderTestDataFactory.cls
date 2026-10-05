@@ -73,6 +73,19 @@ public class ULabOrderTestDataFactory {
         return orders;
     }
 
+    // Creates orders without the legacy Date_Entered_In_*_Status__c timestamps so that the
+    // uLab_Order_Record_Triggered_Fast_Update_Flow is the only source of the stage/rotation dates.
+    public static List<uLab_Order__c> createOrdersForFlow(
+        Integer count,
+        Id caseId,
+        String uAssistStatus,
+        String orderStatus,
+        Id assignedCrb,
+        Boolean doInsert
+    ) {
+        return createOrders(count, caseId, uAssistStatus, orderStatus, null, null, assignedCrb, doInsert);
+    }
+
     private static String nextKey() {
         counter++;
         Integer rnd = Math.abs(Math.mod(Math.abs(Crypto.getRandomInteger()), 1000000));
