@@ -88,8 +88,9 @@ public class ULabOrderTriggerTest {
     @isTest
     static void shouldCreateOrderStatusKpi_WhenOrderInsertedWithOrderStatus() {
         // Given
+        Id crbId = crbUserId();
         List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrders(
-            1, caseId(), null, 'Pending', CURRENT_ENTRY, LAST_ENTRY, false);
+            1, caseId(), null, 'Pending', CURRENT_ENTRY, LAST_ENTRY, crbId, false);
 
         // When
         Test.startTest();
@@ -102,7 +103,7 @@ public class ULabOrderTriggerTest {
         ULab_Order_Status_KPI__c kpi = orderKpis[0];
         Assert.areEqual('Pending', kpi.New_Status__c, 'New status should match the order');
         Assert.isNull(kpi.Previous_Status__c, 'Previous status should be null on insert');
-        Assert.areEqual(UserInfo.getUserId(), kpi.Assigned_User__c, 'Assigned user should be copied');
+        Assert.areEqual(crbId, kpi.Assigned_User__c, 'Assigned user should be the CRB user');
         Assert.isNotNull(kpi.New_Status_Entry_Date__c, 'New entry date should be populated');
         Assert.isNotNull(kpi.Previous_Status_Entry_Time__c, 'Previous entry time should be populated');
         Assert.areEqual(0, kpis(ids(orders), UASSIST).size(), 'No uAssist KPI without a uAssist status');
@@ -171,8 +172,9 @@ public class ULabOrderTriggerTest {
     @isTest
     static void shouldCreateOrderStatusKpiWithPreviousStatus_WhenOrderStatusChanges() {
         // Given
+        Id crbId = crbUserId();
         List<uLab_Order__c> orders = ULabOrderTestDataFactory.createOrders(
-            1, caseId(), null, 'Pending', CURRENT_ENTRY, LAST_ENTRY, true);
+            1, caseId(), null, 'Pending', CURRENT_ENTRY, LAST_ENTRY, crbId, true);
 
         // When
         Test.startTest();
@@ -190,7 +192,7 @@ public class ULabOrderTriggerTest {
         ];
         Assert.areEqual(1, changeKpis.size(), 'One KPI should be created for the status change');
         Assert.areEqual('Pending', changeKpis[0].Previous_Status__c, 'Previous status should be the old value');
-        Assert.areEqual(UserInfo.getUserId(), changeKpis[0].Assigned_User__c, 'Assigned user should be copied');
+        Assert.areEqual(crbId, changeKpis[0].Assigned_User__c, 'Assigned user should be the CRB user');
         Assert.isNotNull(changeKpis[0].New_Status_Entry_Date__c, 'New entry date should be populated');
         Assert.isNotNull(changeKpis[0].Previous_Status_Entry_Time__c, 'Previous entry time should be populated');
         Assert.areEqual(0, kpis(ids(orders), UASSIST).size(), 'uAssist KPI should not be created');
